@@ -5,12 +5,15 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "deploy": "npm run build && pm2 start ./bin/www -n deploy"
   },
   "dependencies": {
     "axios": "^0.18.0",
     "core-js": "^2.6.5",
     "element-ui": "^2.8.2",
+    "highlight.js": "^9.15.6",
+    "lodash": "^4.17.11",
     "marked": "^0.6.2",
     "normalize.css": "^8.0.1",
     "vue": "^2.6.10",

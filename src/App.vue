@@ -1,16 +1,19 @@
 <template>
   <el-container>
     <el-header class="app__header">
-      <div>自动化部署系统</div>
+      <div class="app__header-title" @click="viewDocument('/')">
+        测试环境部署
+      </div>
+      <el-input class="app__port" placeholder="输入端口号查询是否被占用" v-model.trim="port">
+        <el-button slot="append" icon="el-icon-search" @click="queryPort"></el-button>
+      </el-input>
       <div>
-        <i class="el-icon-bell"></i>
         <i class="el-icon-plus" @click="openOperateProjectDialog"></i>
-        <el-dropdown class="app__dropdown">
-          <span>王小虎<i class="el-icon-caret-bottom"></i></span>
+        <el-dropdown class="app__dropdown" @command="viewDocument">
+          <span>文档<i class="el-icon-caret-bottom"></i></span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>文档</el-dropdown-item>
-            <el-dropdown-item>设置</el-dropdown-item>
-            <el-dropdown-item>退出</el-dropdown-item>
+            <el-dropdown-item command="/">示例</el-dropdown-item>
+            <el-dropdown-item command="/">说明</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -37,13 +40,45 @@
 
   export default {
     data() {
-      return {}
+      return {
+        port: ''
+      }
     },
     methods: {
       ...mapMutations(['changeOperateProjectDialogVisible']),
       ...mapActions(['queryProjectList']),
       openOperateProjectDialog() {
         this.changeOperateProjectDialogVisible(true)
+      },
+      viewDocument(path) {
+        if (path.startsWith('http')) {
+          window.open(path)
+        } else {
+          this.$router.push(path)
+        }
+      },
+      queryPort() {
+        if (!this.port) {
+          return this.$message.warning('端口号不能为空')
+        }
+
+        this.$http.projectApi.queryPort(this.port)
+                .then(res => {
+                  const { data } = res
+
+                  if (!data.success) {
+                    throw new Error(data.message)
+                  }
+
+                  if (data.message) {
+                    this.$message.warning(`端口号已被占用`)
+                  } else {
+                    this.$message.success('端口号未被占用')
+                  }
+                })
+                .catch(err => {
+                  this.$message.error(err.message)
+                })
       }
     },
     computed: {
@@ -70,12 +105,21 @@
     border: none;
   }
 
+  .app__port {
+    margin-top: 10px;
+    width: 400px;
+  }
+
   .app__header {
     color: @text;
     display: flex;
     justify-content: space-between;
     line-height: 60px;
     background-color: @theme;
+  }
+
+  .app__header-title {
+    cursor: pointer;
   }
 
   .el-icon-bell, .el-icon-plus {
